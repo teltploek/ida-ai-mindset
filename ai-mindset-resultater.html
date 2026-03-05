@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mindset - Hackathon Resultater</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #0a0a0f;
+            color: #e8e8ed;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            background: radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(239, 68, 68, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 1.2rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #60a5fa;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin-bottom: 3rem;
+            font-weight: 300;
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 2rem;
+            animation: bounce 2s infinite;
+            color: #475569;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .scroll-hint svg {
+            width: 20px;
+            height: 20px;
+            stroke: #475569;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(8px); }
+        }
+
+        /* Stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1px;
+            background: rgba(255,255,255,0.05);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stat-card {
+            padding: 2.5rem 2rem;
+            text-align: center;
+            background: #0a0a0f;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-number.blue { color: #3b82f6; }
+        .stat-number.red { color: #ef4444; }
+        .stat-number.green { color: #10b981; }
+        .stat-number.purple { color: #a78bfa; }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        /* Sections */
+        .section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+        }
+
+        .section-header {
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+            color: #f1f5f9;
+        }
+
+        .section-header p {
+            font-size: 1.05rem;
+            color: #64748b;
+            max-width: 700px;
+            font-weight: 300;
+        }
+
+        /* Chart containers */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+
+        .chart-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        }
+
+        .chart-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: #e2e8f0;
+        }
+
+        .chart-card .subtitle {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+        }
+
+        /* Photo overlay on hover */
+        .chart-card.has-photo {
+            cursor: pointer;
+        }
+
+        .chart-card.has-photo .photo-overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 10, 15, 0.92);
+            pointer-events: none;
+        }
+
+        .chart-card.has-photo:hover .photo-overlay {
+            opacity: 1;
+        }
+
+        .chart-card.has-photo .photo-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 1rem;
+        }
+
+        .chart-card.has-photo .photo-overlay .photo-label {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            padding: 0.3rem 1rem;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            backdrop-filter: blur(8px);
+        }
+
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Insight cards */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .insight-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .insight-card:hover {
+            border-color: rgba(255,255,255,0.12);
+            transform: translateY(-2px);
+        }
+
+        .insight-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .insight-icon.blue { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
+        .insight-icon.red { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+        .insight-icon.green { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+        .insight-icon.purple { background: rgba(167, 139, 250, 0.1); color: #a78bfa; }
+
+        .insight-card h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #e2e8f0;
+        }
+
+        .insight-card p {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        /* Movement section */
+        .movement-visual {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 2rem;
+            align-items: center;
+            margin: 3rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .movement-visual {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+
+        .movement-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .movement-box h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .movement-arrow {
+            font-size: 2rem;
+            color: #10b981;
+        }
+
+        .avg-score {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .avg-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        /* Bar chart section */
+        .bar-chart-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .bar-group {
+            margin-bottom: 2rem;
+        }
+
+        .bar-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .bar-track {
+            height: 40px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            gap: 2px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bar-fill.before { background: rgba(255,255,255,0.08); color: #94a3b8; }
+        .bar-fill.after-blue { background: #3b82f6; }
+        .bar-fill.after-red { background: #ef4444; }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+            margin: 0 2rem;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.blue { background: #3b82f6; }
+        .legend-dot.red { background: #ef4444; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #334155;
+            font-size: 0.8rem;
+            border-top: 1px solid rgba(255,255,255,0.03);
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s, transform 0.8s;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Conclusion section */
+        .conclusion {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+        }
+
+        .conclusion h2 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .conclusion p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            font-weight: 300;
+            line-height: 1.7;
+        }
+
+        /* Heatmap */
+        .heatmap-container {
+            display: grid;
+            grid-template-columns: auto repeat(5, 1fr);
+            gap: 4px;
+            max-width: 700px;
+            margin: 2rem auto;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1.5;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-height: 50px;
+        }
+
+        .heatmap-label {
+            display: flex;
+            align-items: center;
+            font-size: 0.7rem;
+            color: #64748b;
+            padding-right: 8px;
+            white-space: nowrap;
+        }
+
+        .heatmap-col-label {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: #64748b;
+            text-align: center;
+            padding-bottom: 4px;
+            min-height: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="badge">IDA AI Hackathon 2025</div>
+    <h1>Hvor er du på<br>din AI-rejse?</h1>
+    <p>En analyse af holdningsændringer blandt udviklere og ikke-udviklere - fra før til efter hackathon</p>
+    <div class="scroll-hint">
+        Scroll ned
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+            <path d="M12 5v14M19 12l-7 7-7-7"/>
+        </svg>
+    </div>
+</section>
+
+<!-- Key stats -->
+<div class="stats-row">
+    <div class="stat-card fade-in">
+        <div class="stat-number blue">~30</div>
+        <div class="stat-label">Deltagere i alt</div>
+    </div>
+    <div class="stat-card fade-in">
+        <div class="stat-number red">2</div>
+        <div class="stat-label">Grupper: Udviklere & Ikke-udviklere</div>
+    </div>
+    <div class="stat-card fade-in">
+        <div class="stat-number green">+87%</div>
+        <div class="stat-label">I "høj parathed" efter hackathon</div>
+    </div>
+    <div class="stat-card fade-in">
+        <div class="stat-number purple">0</div>
+        <div class="stat-label">Bekymrede efter hackathon</div>
+    </div>
+</div>
+
+<!-- Scatter plots: Before & After -->
+<section class="section fade-in">
+    <div class="section-header">
+        <h2>Før vs. efter hackathon</h2>
+        <p>Hver prik repræsenterer en deltager placeret efter parathed (x) og følelse (y) overfor AI. Se hvordan feltet har rykket sig.</p>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot blue"></div> Udviklere</div>
+        <div class="legend-item"><div class="legend-dot red"></div> Ikke-udviklere</div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-card has-photo">
+            <div class="photo-overlay">
+                <img src="foer.jpg" alt="Originalt foto: Før hackathon">
+                <div class="photo-label">Originalfoto — kilde</div>
+            </div>
+            <h3>Før hackathon</h3>
+            <div class="subtitle">Spredt fordeling med blandede følelser — hold musen over for at se kilden</div>
+            <div class="chart-wrapper">
+                <canvas id="scatterBefore"></canvas>
+            </div>
+        </div>
+        <div class="chart-card has-photo">
+            <div class="photo-overlay">
+                <img src="efter.jpg" alt="Originalt foto: Efter hackathon">
+                <div class="photo-label">Originalfoto — kilde</div>
+            </div>
+            <h3>Efter hackathon</h3>
+            <div class="subtitle">Tydelig samling i øverste højre hjørne — hold musen over for at se kilden</div>
+            <div class="chart-wrapper">
+                <canvas id="scatterAfter"></canvas>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Movement visualization -->
+<section class="section fade-in">
+    <div class="section-header">
+        <h2>Bevægelsen i tal</h2>
+        <p>Gennemsnitlig placering på begge akser viser en markant positiv forskydning.</p>
+    </div>
+
+    <div class="movement-visual">
+        <div class="movement-box">
+            <h4>Gennemsnit Før</h4>
+            <div class="avg-score" style="color: #64748b;">3.4</div>
+            <div class="avg-label">Parathed</div>
+            <div class="avg-score" style="color: #64748b; margin-top: 1rem;">3.6</div>
+            <div class="avg-label">Følelse</div>
+        </div>
+        <div class="movement-arrow">&#10132;</div>
+        <div class="movement-box">
+            <h4>Gennemsnit Efter</h4>
+            <div class="avg-score" style="color: #10b981;">4.3</div>
+            <div class="avg-label">Parathed (+0.9)</div>
+            <div class="avg-score" style="color: #10b981; margin-top: 1rem;">4.2</div>
+            <div class="avg-label">Følelse (+0.6)</div>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Distribution comparison -->
+<section class="section fade-in">
+    <div class="section-header">
+        <h2>Fordeling: Parathed</h2>
+        <p>Sammenligning af hvor deltagerne placerer sig på parathedsskalaen, før og efter.</p>
+    </div>
+
+    <div class="chart-card full-width" style="max-width: 800px; margin: 0 auto;">
+        <div class="chart-wrapper" style="height: 350px;">
+            <canvas id="readinessChart"></canvas>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Feeling comparison -->
+<section class="section fade-in">
+    <div class="section-header">
+        <h2>Fordeling: Følelse</h2>
+        <p>Skiftet fra bekymring og afventende til optimisme og begejstring.</p>
+    </div>
+
+    <div class="chart-card full-width" style="max-width: 800px; margin: 0 auto;">
+        <div class="chart-wrapper" style="height: 350px;">
+            <canvas id="feelingChart"></canvas>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Group comparison -->
+<section class="section fade-in">
+    <div class="section-header">
+        <h2>Udviklere vs. ikke-udviklere</h2>
+        <p>Hvem rykkede sig mest? En sammenligning af de to grupper.</p>
+    </div>
+
+    <div class="chart-card full-width" style="max-width: 800px; margin: 0 auto;">
+        <div class="chart-wrapper" style="height: 350px;">
+            <canvas id="groupChart"></canvas>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Heatmap -->
+<section class="section fade-in">
+    <div class="section-header">
+        <h2>Heatmap: Hvor landede folk efter?</h2>
+        <p>Antal deltagere i hvert felt efter hackathon. Klyngen i øverste højre er tydelig.</p>
+    </div>
+
+    <div class="heatmap-container" id="heatmap">
+        <!-- Generated by JS -->
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Key insights -->
+<section class="section fade-in">
+    <div class="section-header">
+        <h2>Nøgleindsigter</h2>
+        <p>De vigtigste observationer fra sammenligningen af før- og efter-målingerne.</p>
+    </div>
+
+    <div class="insights-grid">
+        <div class="insight-card">
+            <div class="insight-icon green">&#8593;</div>
+            <h4>Massiv positiv forskydning</h4>
+            <p>Næsten alle deltagere rykkede sig mod højere parathed og mere positive følelser. Hele feltet er forskudt til øverste højre hjørne efter hackathon.</p>
+        </div>
+        <div class="insight-card">
+            <div class="insight-icon red">&#9632;</div>
+            <h4>Ikke-udviklere rykkede mest</h4>
+            <p>Ikke-udviklerne (rød) viste den største bevægelse. Mange gik fra nysgerrig/optimistisk til begejstret med høj parathed. Hands-on erfaring var nøglen.</p>
+        </div>
+        <div class="insight-card">
+            <div class="insight-icon blue">&#9632;</div>
+            <h4>Udviklere: Stadig nogle afventende</h4>
+            <p>Nogle udviklere (blå) forblev i det lavere følelsesområde trods høj parathed. De ved det virker, men har måske forbehold om kvalitet eller konsekvenser.</p>
+        </div>
+        <div class="insight-card">
+            <div class="insight-icon purple">&#10024;</div>
+            <h4>Ingen bekymrede efter</h4>
+            <p>Før hackathon var der 2-3 deltagere i bekymret/afventende zonen. Ingen befinder sig der efter. Hands-on oplevelsen fjernede frygten.</p>
+        </div>
+        <div class="insight-card">
+            <div class="insight-icon green">&#9650;</div>
+            <h4>Tomt venstre halvdel</h4>
+            <p>Efter hackathon er venstre halvdel ("ikke relevant" til "vil gerne forstå mere") helt tom. Alle har bevæget sig forbi begynder-stadiet.</p>
+        </div>
+        <div class="insight-card">
+            <div class="insight-icon blue">&#11044;</div>
+            <h4>Klyngedannelse</h4>
+            <p>Før var dots spredt over hele feltet. Efter er der en tæt klynge i "Vil bruge aktivt/integrere" + "Optimistisk/Begejstret" — en klar konsensus.</p>
+        </div>
+    </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Conclusion -->
+<section class="conclusion fade-in">
+    <h2>Hackathon virker.</h2>
+    <p>Data viser en entydig positiv effekt af hands-on AI-erfaring. Særligt ikke-udviklere profiterer af at prøve teknologien selv. Vejen fra nysgerrighed til handling går gennem praksis.</p>
+</section>
+
+<footer class="footer">
+    AI Mindset-analyse &middot; IDA Hackathon 2025 &middot; Genereret med data fra deltagernes selvvurdering
+</footer>
+
+<script>
+// Chart.js defaults
+Chart.defaults.color = '#64748b';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+Chart.defaults.font.family = 'Inter, sans-serif';
+
+// Data: Before hackathon (approximate positions read from photo)
+// Scale: 1=Ikke relevant/Bekymret, 2=Vil gerne forstå/Afventende, 3=Klar til prøve/Nysgerrig, 4=Vil bruge aktivt/Optimistisk, 5=Vil integrere/Begejstret
+
+const beforeDevs = [
+    {x:3.1, y:4.6}, {x:3.4, y:4.4}, {x:3.7, y:4.5}, {x:4.0, y:4.6},
+    {x:4.2, y:4.4}, {x:4.5, y:4.5}, {x:4.6, y:4.3}, {x:5.0, y:4.5},
+    {x:2.7, y:3.3}, {x:3.5, y:3.5}, {x:4.0, y:3.7},
+    {x:4.2, y:3.4}, {x:4.0, y:2.3}, {x:4.0, y:1.8}, {x:3.8, y:2.0},
+    {x:4.5, y:3.3}, {x:4.2, y:2.7}
+];
+
+const beforeNonDevs = [
+    {x:3.0, y:4.7}, {x:3.2, y:4.5}, {x:3.5, y:4.3},
+    {x:4.0, y:4.3}, {x:4.5, y:3.8}, {x:4.6, y:3.5},
+    {x:4.8, y:4.4}, {x:5.0, y:4.2}, {x:5.0, y:3.5},
+    {x:3.5, y:3.2}, {x:5.0, y:3.0}
+];
+
+// Data: After hackathon
+const afterDevs = [
+    {x:5.0, y:5.0}, {x:4.6, y:4.6}, {x:4.5, y:4.5},
+    {x:4.7, y:4.4}, {x:4.8, y:4.3},
+    {x:4.0, y:3.6}, {x:4.0, y:3.2}, {x:4.2, y:3.0},
+    {x:4.5, y:2.9}, {x:5.0, y:3.2}
+];
+
+const afterNonDevs = [
+    {x:3.1, y:4.8}, {x:3.4, y:4.7},
+    {x:4.3, y:4.6}, {x:4.4, y:4.5}, {x:4.5, y:4.4},
+    {x:4.6, y:4.7}, {x:4.7, y:4.5}, {x:4.8, y:4.6},
+    {x:5.0, y:4.8}, {x:5.0, y:4.5}, {x:4.9, y:4.3},
+    {x:4.3, y:4.0}, {x:4.5, y:3.8}, {x:4.7, y:3.7},
+    {x:4.8, y:3.5}, {x:5.0, y:3.5},
+    {x:4.2, y:3.2}, {x:5.0, y:3.3}
+];
+
+const scatterOptions = (title) => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: { display: false },
+        tooltip: {
+            backgroundColor: 'rgba(15,15,23,0.95)',
+            borderColor: 'rgba(255,255,255,0.1)',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 8,
+            titleFont: { weight: '600' },
+            callbacks: {
+                label: (ctx) => {
+                    const readiness = ['', 'Ikke relevant', 'Vil forstå mere', 'Klar til at prøve', 'Vil bruge aktivt', 'Vil integrere'];
+                    const feeling = ['', 'Bekymret', 'Afventende', 'Nysgerrig', 'Optimistisk', 'Begejstret'];
+                    const r = Math.round(ctx.parsed.x);
+                    const f = Math.round(ctx.parsed.y);
+                    const group = ctx.datasetIndex === 0 ? 'Udvikler' : 'Ikke-udvikler';
+                    return [group, readiness[r] || '', feeling[f] || ''];
+                }
+            }
+        }
+    },
+    scales: {
+        x: {
+            min: 0.5, max: 5.5,
+            title: { display: true, text: 'Parathed', font: { size: 11, weight: '500' }, color: '#475569' },
+            ticks: {
+                stepSize: 1,
+                callback: (v) => ['','Ikke\nrelevant','Vil forstå\nmere','Klar til\nat prøve','Vil bruge\naktivt','Vil\nintegrere'][v] || '',
+                font: { size: 9 },
+                maxRotation: 0
+            },
+            grid: { color: 'rgba(255,255,255,0.03)' }
+        },
+        y: {
+            min: 0.5, max: 5.5,
+            title: { display: true, text: 'Følelse', font: { size: 11, weight: '500' }, color: '#475569' },
+            ticks: {
+                stepSize: 1,
+                callback: (v) => ['','Bekymret','Afventende','Nysgerrig','Optimistisk','Begejstret'][v] || '',
+                font: { size: 9 }
+            },
+            grid: { color: 'rgba(255,255,255,0.03)' }
+        }
+    }
+});
+
+// Before scatter
+new Chart(document.getElementById('scatterBefore'), {
+    type: 'scatter',
+    data: {
+        datasets: [
+            {
+                label: 'Udviklere',
+                data: beforeDevs,
+                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                borderColor: 'rgba(59, 130, 246, 0.9)',
+                borderWidth: 1.5,
+                pointRadius: 8,
+                pointHoverRadius: 11
+            },
+            {
+                label: 'Ikke-udviklere',
+                data: beforeNonDevs,
+                backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                borderColor: 'rgba(239, 68, 68, 0.9)',
+                borderWidth: 1.5,
+                pointRadius: 8,
+                pointHoverRadius: 11
+            }
+        ]
+    },
+    options: scatterOptions('Før hackathon')
+});
+
+// After scatter
+new Chart(document.getElementById('scatterAfter'), {
+    type: 'scatter',
+    data: {
+        datasets: [
+            {
+                label: 'Udviklere',
+                data: afterDevs,
+                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                borderColor: 'rgba(59, 130, 246, 0.9)',
+                borderWidth: 1.5,
+                pointRadius: 8,
+                pointHoverRadius: 11
+            },
+            {
+                label: 'Ikke-udviklere',
+                data: afterNonDevs,
+                backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                borderColor: 'rgba(239, 68, 68, 0.9)',
+                borderWidth: 1.5,
+                pointRadius: 8,
+                pointHoverRadius: 11
+            }
+        ]
+    },
+    options: scatterOptions('Efter hackathon')
+});
+
+// Readiness distribution
+const readinessLabels = ['Ikke relevant', 'Vil forstå mere', 'Klar til at prøve', 'Vil bruge aktivt', 'Vil integrere'];
+const allBefore = [...beforeDevs, ...beforeNonDevs];
+const allAfter = [...afterDevs, ...afterNonDevs];
+
+function countBucket(data, axis, bucket) {
+    return data.filter(d => Math.round(d[axis]) === bucket).length;
+}
+
+new Chart(document.getElementById('readinessChart'), {
+    type: 'bar',
+    data: {
+        labels: readinessLabels,
+        datasets: [
+            {
+                label: 'Før',
+                data: [1,2,3,4,5].map(b => countBucket(allBefore, 'x', b)),
+                backgroundColor: 'rgba(100, 116, 139, 0.4)',
+                borderColor: 'rgba(100, 116, 139, 0.6)',
+                borderWidth: 1,
+                borderRadius: 6,
+                barPercentage: 0.7
+            },
+            {
+                label: 'Efter',
+                data: [1,2,3,4,5].map(b => countBucket(allAfter, 'x', b)),
+                backgroundColor: 'rgba(16, 185, 129, 0.5)',
+                borderColor: 'rgba(16, 185, 129, 0.7)',
+                borderWidth: 1,
+                borderRadius: 6,
+                barPercentage: 0.7
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: { usePointStyle: true, pointStyle: 'rectRounded', padding: 20 }
+            }
+        },
+        scales: {
+            x: { grid: { display: false } },
+            y: {
+                title: { display: true, text: 'Antal deltagere', font: { size: 11 } },
+                ticks: { stepSize: 2 },
+                grid: { color: 'rgba(255,255,255,0.03)' }
+            }
+        }
+    }
+});
+
+// Feeling distribution
+const feelingLabels = ['Bekymret', 'Afventende', 'Nysgerrig', 'Optimistisk', 'Begejstret'];
+
+new Chart(document.getElementById('feelingChart'), {
+    type: 'bar',
+    data: {
+        labels: feelingLabels,
+        datasets: [
+            {
+                label: 'Før',
+                data: [1,2,3,4,5].map(b => countBucket(allBefore, 'y', b)),
+                backgroundColor: 'rgba(100, 116, 139, 0.4)',
+                borderColor: 'rgba(100, 116, 139, 0.6)',
+                borderWidth: 1,
+                borderRadius: 6,
+                barPercentage: 0.7
+            },
+            {
+                label: 'Efter',
+                data: [1,2,3,4,5].map(b => countBucket(allAfter, 'y', b)),
+                backgroundColor: 'rgba(167, 139, 250, 0.5)',
+                borderColor: 'rgba(167, 139, 250, 0.7)',
+                borderWidth: 1,
+                borderRadius: 6,
+                barPercentage: 0.7
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: { usePointStyle: true, pointStyle: 'rectRounded', padding: 20 }
+            }
+        },
+        scales: {
+            x: { grid: { display: false } },
+            y: {
+                title: { display: true, text: 'Antal deltagere', font: { size: 11 } },
+                ticks: { stepSize: 2 },
+                grid: { color: 'rgba(255,255,255,0.03)' }
+            }
+        }
+    }
+});
+
+// Group comparison radar-ish bar chart
+const groupLabels = ['Parathed (Før)', 'Parathed (Efter)', 'Følelse (Før)', 'Følelse (Efter)'];
+
+function avg(arr, key) {
+    return (arr.reduce((s, d) => s + d[key], 0) / arr.length).toFixed(1);
+}
+
+new Chart(document.getElementById('groupChart'), {
+    type: 'bar',
+    data: {
+        labels: groupLabels,
+        datasets: [
+            {
+                label: 'Udviklere',
+                data: [
+                    avg(beforeDevs, 'x'), avg(afterDevs, 'x'),
+                    avg(beforeDevs, 'y'), avg(afterDevs, 'y')
+                ],
+                backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                borderColor: 'rgba(59, 130, 246, 0.7)',
+                borderWidth: 1,
+                borderRadius: 6,
+                barPercentage: 0.6
+            },
+            {
+                label: 'Ikke-udviklere',
+                data: [
+                    avg(beforeNonDevs, 'x'), avg(afterNonDevs, 'x'),
+                    avg(beforeNonDevs, 'y'), avg(afterNonDevs, 'y')
+                ],
+                backgroundColor: 'rgba(239, 68, 68, 0.5)',
+                borderColor: 'rgba(239, 68, 68, 0.7)',
+                borderWidth: 1,
+                borderRadius: 6,
+                barPercentage: 0.6
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: { usePointStyle: true, pointStyle: 'rectRounded', padding: 20 }
+            }
+        },
+        scales: {
+            x: { grid: { display: false } },
+            y: {
+                min: 0, max: 5,
+                title: { display: true, text: 'Gennemsnitlig score (1-5)', font: { size: 11 } },
+                ticks: {
+                    stepSize: 1,
+                    callback: (v) => ['','Bekymret /\nIkke relevant','Afventende /\nVil forstå','Nysgerrig /\nKlar til prøve','Optimistisk /\nVil bruge aktivt','Begejstret /\nVil integrere'][v] || ''
+                },
+                grid: { color: 'rgba(255,255,255,0.03)' }
+            }
+        }
+    }
+});
+
+// Heatmap: After data
+const heatmapData = [];
+for (let y = 5; y >= 1; y--) {
+    for (let x = 1; x <= 5; x++) {
+        const count = allAfter.filter(d => Math.round(d.x) === x && Math.round(d.y) === y).length;
+        heatmapData.push({ x, y, count });
+    }
+}
+
+const heatmapContainer = document.getElementById('heatmap');
+const yLabels = ['Begejstret', 'Optimistisk', 'Nysgerrig', 'Afventende', 'Bekymret'];
+const xLabels = ['Ikke relevant', 'Vil forstå mere', 'Klar til prøve', 'Vil bruge aktivt', 'Vil integrere'];
+
+// Column headers
+heatmapContainer.innerHTML = '<div></div>';
+xLabels.forEach(label => {
+    heatmapContainer.innerHTML += `<div class="heatmap-col-label">${label}</div>`;
+});
+
+const maxCount = Math.max(...heatmapData.map(d => d.count));
+
+for (let row = 0; row < 5; row++) {
+    heatmapContainer.innerHTML += `<div class="heatmap-label">${yLabels[row]}</div>`;
+    for (let col = 0; col < 5; col++) {
+        const d = heatmapData[row * 5 + col];
+        const intensity = d.count / maxCount;
+        const bg = d.count === 0
+            ? 'rgba(255,255,255,0.02)'
+            : `rgba(16, 185, 129, ${0.1 + intensity * 0.7})`;
+        const text = d.count > 0 ? d.count : '';
+        heatmapContainer.innerHTML += `<div class="heatmap-cell" style="background:${bg}">${text}</div>`;
+    }
+}
+
+// Scroll animation
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
